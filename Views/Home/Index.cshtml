@@ -1,0 +1,105 @@
+﻿@model BigShool_ThWeb.ViewModels.CoursesViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="course" style="margin-top:20px;">
+    @foreach (var course in Model.UpcommingCourses)
+    {
+        <div style="display:flex;">
+            <div class="date">
+                <div class="month">
+                    @course.DateTime.ToString("MM")
+                </div>
+                <div class="day">
+                    @course.DateTime.ToString("dd")
+                </div>
+            </div>
+            <div class="details">
+                <div class="lecturer">
+                    @course.Lecturer.Name
+                    @if (Model.ShowAction)
+                    {
+                        var text = "Follow?";
+                        var btn = "";
+                        if (course.isFollowed == true)
+                        {
+                            text = "You're Following";
+                            btn = "btn-success";
+                        }
+                        <button class="btn @btn btn-sm js-toggle-follow" data-user-id="@course.LecturerId">@text</button>
+                    }
+                </div>
+               
+
+
+                <div class="category">
+                    @course.category.Name
+                    @if (Model.ShowAction)
+                    {
+                        var text = "Going?";
+                        var btn = "";
+                        if (course.isAttended == true)
+                        {
+                            text = "Attended";
+                            btn = "btn-success";
+                        }
+                        <button data-course-id="@course.Id" class="btn @btn btn-sm js-toggle-attendance">@text</button>
+                    }
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+@section scripts
+{
+    <script>
+        $(document).ready(() => {
+            $(".js-toggle-attendance").on("click", (e) => {
+                var button = $(e.target)
+
+                $.post("/api/attendances", { courseId: button.attr("data-course-id") })
+                    .done(() => {
+                        if (button.hasClass("btn-success")) {
+                            button
+                                .removeClass("btn-success")
+                                .text("Going?")
+                        } else {
+                            button
+                                .addClass("btn-success")
+                                .text("Attended")
+                        }
+
+                    }).fail((err) => {
+                        console.log(err.responseText)
+                        alert(err.responseJSON.Message)
+                    })
+            })
+
+            $(".js-toggle-follow").on("click", (e) => {
+                var button = $(e.target)
+
+                $.post("/api/followings", {
+                    followeeId: button.attr("data-user-id")
+                })
+                    .done(() => {
+                        if (button.hasClass("btn-success")) {
+                            button
+                                .removeClass("btn-success")
+                                .text("Follow?")
+                        } else {
+                            button
+                                .addClass("btn-success")
+                                .text("You're Following")
+                        }
+                    }).fail((err) => {
+                        console.log(err.responseText)
+                        alert(err.responseJSON.Message)
+                    })
+            })
+        })
+    </script>
+    
+        
+}
